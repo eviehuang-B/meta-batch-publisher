@@ -455,3 +455,26 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+.legal-page {
+  max-width: 920px;
+}
+
+.legal-page .panel {
+  display: grid;
+  gap: 14px;
+}
+
+.legal-page h1 {
+  font-size: 34px;
+}
+
+.legal-page h2 {
+  margin-top: 10px;
+}
+
+.legal-page p {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--muted);
+}
