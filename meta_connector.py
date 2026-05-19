@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import cgi
 import json
 import mimetypes
 import os
@@ -76,23 +75,14 @@ class MetaConnectorHandler(BaseHTTPRequestHandler):
         self.send_json(404, {"error": "Not found"})
 
     def handle_caption_parse(self):
-        form = cgi.FieldStorage(
-            fp=self.rfile,
-            headers=self.headers,
-            environ={
-                "REQUEST_METHOD": "POST",
-                "CONTENT_TYPE": self.headers.get("Content-Type", ""),
-                "CONTENT_LENGTH": self.headers.get("Content-Length", "0"),
-            },
-        )
-        upload = form["file"] if "file" in form else None
-        if upload is None or not getattr(upload, "filename", ""):
+        upload = read_multipart_file(self)
+        if not upload:
             self.send_json(400, {"error": "Missing file"})
             return
 
         try:
-            blocks = parse_caption_xlsx(upload.file.read())
-            self.send_json(200, {"fileName": upload.filename, "blocks": blocks})
+            blocks = parse_caption_xlsx(upload["content"])
+            self.send_json(200, {"fileName": upload["filename"], "blocks": blocks})
         except Exception as error:
             self.send_json(400, {"error": str(error)})
 
@@ -296,6 +286,42 @@ def graph_get(url, params):
     request = Request(f"{url}?{urlencode(params)}", headers={"Accept": "application/json"})
     with urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def read_multipart_file(handler):
+    content_type = handler.headers.get("Content-Type", "")
+    marker = "boundary="
+    if marker not in content_type:
+        return None
+
+    boundary = content_type.split(marker, 1)[1].strip().strip('"')
+    length = int(handler.headers.get("Content-Length", "0"))
+    body = handler.rfile.read(length)
+    boundary_bytes = ("--" + boundary).encode("utf-8")
+
+    for part in body.split(boundary_bytes):
+        part = part.strip()
+        if not part or part == b"--" or b"\r\n\r\n" not in part:
+            continue
+
+        header_blob, content = part.split(b"\r\n\r\n", 1)
+        headers = header_blob.decode("utf-8", errors="ignore")
+        if 'name="file"' not in headers:
+            continue
+
+        filename = "upload.xlsx"
+        for header_line in headers.split("\r\n"):
+            if "filename=" not in header_line:
+                continue
+            filename = header_line.split("filename=", 1)[1].strip().strip('"')
+
+        if content.endswith(b"\r\n"):
+            content = content[:-2]
+        if content.endswith(b"--"):
+            content = content[:-2]
+        return {"filename": filename, "content": content}
+
+    return None
 
 
 def parse_caption_xlsx(content: bytes):
