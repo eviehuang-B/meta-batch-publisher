@@ -51,7 +51,14 @@ class MetaConnectorHandler(BaseHTTPRequestHandler):
             self.handle_meta_accounts()
             return
 
-        target = "index.html" if parsed.path in ("", "/") else unquote(parsed.path).lstrip("/")
+        aliases = {
+            "/privacy": "privacy.html",
+            "/delete": "data-deletion.html",
+            "/data-deletion": "data-deletion.html",
+        }
+        target = aliases.get(parsed.path)
+        if not target:
+            target = "index.html" if parsed.path in ("", "/") else unquote(parsed.path).lstrip("/")
         path = (ROOT / target).resolve()
         if not str(path).startswith(str(ROOT)) or not path.exists() or path.is_dir():
             self.send_json(404, {"error": "Not found"})
