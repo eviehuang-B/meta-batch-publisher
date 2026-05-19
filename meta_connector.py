@@ -50,6 +50,9 @@ class MetaConnectorHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/meta/accounts":
             self.handle_meta_accounts()
             return
+        if parsed.path == "/api/meta/data-deletion":
+            self.handle_data_deletion_callback()
+            return
 
         aliases = {
             "/privacy": "privacy.html",
@@ -78,6 +81,9 @@ class MetaConnectorHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/api/meta/schedule":
             self.handle_meta_schedule()
+            return
+        if parsed.path == "/api/meta/data-deletion":
+            self.handle_data_deletion_callback()
             return
         self.send_json(404, {"error": "Not found"})
 
@@ -192,6 +198,15 @@ class MetaConnectorHandler(BaseHTTPRequestHandler):
         except Exception as error:
             self.send_json(400, {"error": str(error)})
 
+    def handle_data_deletion_callback(self):
+        self.send_json(
+            200,
+            {
+                "url": public_url("/data-deletion"),
+                "confirmation_code": f"delete-{int(time.time())}",
+            },
+        )
+
     def send_cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -223,6 +238,13 @@ def default_scopes():
         "instagram_basic",
         "instagram_content_publish",
     ]
+
+
+def public_url(path):
+    base_url = os.environ.get("PUBLIC_BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL")
+    if not base_url:
+        base_url = f"http://{HOST}:{PORT}"
+    return base_url.rstrip("/") + path
 
 
 def load_config():
