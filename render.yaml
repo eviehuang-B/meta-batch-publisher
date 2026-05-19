@@ -1,9 +1,9 @@
 services:
   - type: web
     name: meta-batch-publisher
-    env: python
+    runtime: python
     plan: free
-    buildCommand: ""
+    buildCommand: "python --version"
     startCommand: python meta_connector.py
     envVars:
       - key: BIND_HOST
