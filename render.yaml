@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: meta-batch-publisher
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: python meta_connector.py
+    envVars:
+      - key: BIND_HOST
+        value: 0.0.0.0
+      - key: META_GRAPH_VERSION
+        value: v24.0
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_REDIRECT_URI
+        sync: false

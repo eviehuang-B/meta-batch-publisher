@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>META 快速上傳工作台</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">META Batch Publisher</p>
+        <h1>META 快速上傳工作台</h1>
+      </div>
+      <div class="sync-card">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Meta OAuth 已接入</strong>
+          <small>可登入並自動載入粉專與 IG 帳號</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow">
+      <article class="panel input-panel">
+        <div class="panel-header">
+          <h2>素材與文案</h2>
+          <button id="clearAll" type="button" class="ghost-button">清空</button>
+        </div>
+
+        <label class="drop-field">
+          <span>1. 選擇影片資料夾</span>
+          <input id="folderInput" type="file" accept="video/*" multiple webkitdirectory>
+          <small>選完後會在下方列出資料夾內可用影片。</small>
+        </label>
+
+        <label class="drop-field compact-drop">
+          <span>或直接多選影片</span>
+          <input id="videoInput" type="file" accept="video/*" multiple>
+        </label>
+
+        <div class="selected-box">
+          <div class="selected-header">
+            <strong>已選影片</strong>
+            <span id="selectedVideoSummary">尚未選擇</span>
+          </div>
+          <ul id="selectedVideoList" class="selected-list"></ul>
+        </div>
+
+        <label class="drop-field">
+          <span>2. 選擇文案資料</span>
+          <input id="copyInput" type="file" accept=".txt,.html,.htm,.csv,.md,.doc,.docx,.xls,.xlsx">
+          <small>Excel 會透過本機串接端解析；文字、HTML、CSV、Markdown 可直接解析。</small>
+        </label>
+
+        <label class="field-stack">
+          <span>或直接貼上多段文案</span>
+          <textarea id="manualCopy" rows="8" placeholder="影片A&#10;這是第一支影片文案&#10;&#10;---&#10;影片B&#10;這是第二支影片文案"></textarea>
+        </label>
+
+        <div class="selected-box">
+          <div class="selected-header">
+            <strong>文案段落</strong>
+            <span id="copySummary">尚未匯入</span>
+          </div>
+          <ol id="copyBlockList" class="copy-list"></ol>
+        </div>
+
+        <div class="match-options">
+          <label>
+            <span>自動配對方式</span>
+            <select id="matchMode">
+              <option value="smart">智慧判斷：標題、序號、檔名關鍵字</option>
+              <option value="order">依影片排序配對</option>
+              <option value="filename">依檔名關鍵字配對</option>
+            </select>
+          </label>
+          <label>
+            <span>第一個發布日期</span>
+            <input id="scheduleStartDate" type="date">
+          </label>
+        </div>
+
+        <div class="weekly-panel">
+          <div class="section-title">每週發布日</div>
+          <div class="weekday-grid" id="weekdayGrid">
+            <label><input type="checkbox" value="1" checked> 週一</label>
+            <label><input type="checkbox" value="2"> 週二</label>
+            <label><input type="checkbox" value="3" checked> 週三</label>
+            <label><input type="checkbox" value="4"> 週四</label>
+            <label><input type="checkbox" value="5" checked> 週五</label>
+            <label><input type="checkbox" value="6"> 週六</label>
+            <label><input type="checkbox" value="0"> 週日</label>
+          </div>
+          <div class="time-slots">
+            <label>
+              <span>每日發布時段</span>
+              <input id="timeSlots" type="text" value="12:00, 20:00">
+            </label>
+            <small>可輸入多個時間，例如 10:00, 14:30, 21:00。</small>
+          </div>
+        </div>
+
+        <button id="matchButton" type="button" class="primary-button">建立配對與排程</button>
+      </article>
+
+      <aside class="side-stack">
+        <article class="panel summary-panel">
+          <h2>批次設定</h2>
+          <div class="metrics">
+            <div><strong id="videoCount">0</strong><span>影片</span></div>
+            <div><strong id="copyCount">0</strong><span>文案段落</span></div>
+            <div><strong id="readyCount">0</strong><span>可發布</span></div>
+          </div>
+
+          <div class="batch-tools">
+            <label>
+              <span>重新套用起始日</span>
+              <input id="batchStartDate" type="date">
+            </label>
+            <button id="applyBatchTime" type="button" class="secondary-button">依每週規則重排</button>
+          </div>
+
+          <div class="platform-row" aria-label="發布平台">
+            <label><input id="batchFb" type="checkbox" checked> Facebook</label>
+            <label><input id="batchIg" type="checkbox" checked> Instagram</label>
+            <button id="applyPlatforms" type="button" class="secondary-button">套用平台</button>
+          </div>
+
+          <button id="exportCsv" type="button" class="primary-button">匯出 CSV</button>
+          <button id="exportJson" type="button" class="secondary-button full-width">匯出 API JSON</button>
+        </article>
+
+        <article class="panel integration-panel">
+          <h2>Business Suite 串接</h2>
+          <button id="connectMeta" type="button" class="primary-button">連接 Meta 開發者 App</button>
+          <button id="loadAccounts" type="button" class="secondary-button full-width">載入粉專與 IG 帳號</button>
+          <button id="openBusinessSuite" type="button" class="secondary-button full-width">開啟 Business Suite 後台</button>
+          <label>
+            <span>本機串接端 URL</span>
+            <input id="connectorUrl" type="url" value="http://127.0.0.1:8812/api/meta/schedule">
+          </label>
+          <label>
+            <span>Graph API 版本</span>
+            <input id="graphVersion" type="text" value="v24.0">
+          </label>
+          <label>
+            <span>Facebook 粉專清單</span>
+            <textarea id="pageAccounts" rows="4" placeholder="載入後會自動帶入；也可手動填：粉專名稱 | Page ID"></textarea>
+          </label>
+          <label>
+            <span>Instagram 商業帳號清單</span>
+            <textarea id="igAccounts" rows="4" placeholder="載入後會自動帶入；也可手動填：帳號名稱 | IG Business Account ID"></textarea>
+          </label>
+          <button id="sendConnector" type="button" class="primary-button">送到本機串接端</button>
+          <p id="connectorStatus" class="connector-status">尚未送出</p>
+        </article>
+      </aside>
+    </section>
+
+    <section class="table-section">
+      <div class="table-header">
+        <h2>發布內容</h2>
+        <p id="hintText">選擇影片與文案後建立配對清單。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>影片</th>
+              <th>發布時間</th>
+              <th>平台</th>
+              <th>帳號</th>
+              <th>文案</th>
+              <th>配對</th>
+              <th>狀態</th>
+            </tr>
+          </thead>
+          <tbody id="publishRows">
+            <tr class="empty-row">
+              <td colspan="7">尚未建立清單</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
