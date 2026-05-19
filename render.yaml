@@ -10,6 +10,8 @@ services:
         value: 0.0.0.0
       - key: META_GRAPH_VERSION
         value: v24.0
+      - key: META_SCOPES
+        value: pages_show_list
       - key: META_APP_ID
         sync: false
       - key: META_APP_SECRET
