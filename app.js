@@ -4,6 +4,10 @@ const state = {
   rows: []
 };
 
+const API_BASE = window.location.origin && window.location.origin.startsWith("http")
+  ? window.location.origin
+  : "http://127.0.0.1:8812";
+
 const els = {
   folderInput: document.querySelector("#folderInput"),
   videoInput: document.querySelector("#videoInput"),
@@ -43,6 +47,7 @@ const els = {
 };
 
 setInitialDates();
+els.connectorUrl.value = `${API_BASE}/api/meta/schedule`;
 render();
 refreshMetaStatus();
 
@@ -105,7 +110,7 @@ els.applyPlatforms.addEventListener("click", () => {
 });
 
 els.connectMeta.addEventListener("click", () => {
-  window.open("http://127.0.0.1:8812/api/meta/oauth/start", "_blank", "noopener");
+  window.open(`${API_BASE}/api/meta/oauth/start`, "_blank", "noopener");
 });
 
 els.loadAccounts.addEventListener("click", loadMetaAccounts);
@@ -158,7 +163,7 @@ els.clearAll.addEventListener("click", () => {
 
 async function refreshMetaStatus() {
   try {
-    const response = await fetch("http://127.0.0.1:8812/api/meta/status");
+    const response = await fetch(`${API_BASE}/api/meta/status`);
     const status = await response.json();
     els.graphVersion.value = status.graphVersion || "v24.0";
     if (!status.configured) {
@@ -176,7 +181,7 @@ async function refreshMetaStatus() {
 async function loadMetaAccounts() {
   try {
     setConnectorStatus("載入帳號中...", "");
-    const response = await fetch("http://127.0.0.1:8812/api/meta/accounts");
+    const response = await fetch(`${API_BASE}/api/meta/accounts`);
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "載入失敗");
     els.pageAccounts.value = payload.pages.map((page) => `${page.name} | ${page.id}`).join("\n");
@@ -295,7 +300,7 @@ async function parseOfficeFile(file) {
   const form = new FormData();
   form.append("file", file);
   try {
-    const response = await fetch("http://127.0.0.1:8812/api/captions/parse", { method: "POST", body: form });
+    const response = await fetch(`${API_BASE}/api/captions/parse`, { method: "POST", body: form });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "解析失敗");
     els.hintText.textContent = `已從 ${file.name} 匯入 ${payload.blocks.length} 段文案。`;
